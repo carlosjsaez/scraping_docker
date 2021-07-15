@@ -1,4 +1,4 @@
-beautifulsoup4
-mysql-connector
-urllib3
-lxml
+flask
+flask_mysqldb
+flask_restful
+flasgger
