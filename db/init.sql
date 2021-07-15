@@ -1,9 +1,11 @@
 use urparts_scraper;
 
 CREATE TABLE parts (
-  manufacturer VARCHAR(20),
-  category VARCHAR(20),
-  model VARCHAR(20),
-  part VARCHAR(20),
-  part_category VARCHAR(20)
+  manufacturer VARCHAR(30) NOT NULL,
+  category VARCHAR(30) NOT NULL,
+  model VARCHAR(30) NOT NULL,
+  part VARCHAR(30) NOT NULL,
+  part_category VARCHAR(100) NOT NULL,
+
+  UNIQUE KEY(manufacturer, category, model, part, part_category)
   );

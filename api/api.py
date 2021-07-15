@@ -47,7 +47,7 @@ mysql = MySQL(api)
 
 class consulta(Resource):
         # @api.route('/', methods = ['GET'])
-        def get(self, params = 'test'):
+        def get(self):
                 """
                 post endpoint
                 ---
@@ -97,7 +97,6 @@ class consulta(Resource):
                           type: integer
                           description: The sum of number
                 """
-                print(params)
                 try:
                     params_raw = ['manufacturer', 'category', 'model', 'part', 'part_category']
                     params = []
@@ -114,8 +113,12 @@ class consulta(Resource):
                     cur = mysql.connection.cursor()
                     cur.execute(f'SELECT * from urparts_scraper.parts {query}')
                     results = cur.fetchall()
-                    res = jsonify({'status': 'Query succesful', 'json_data': json.dumps(results)})
-                    return res
+
+                    row_headers = [x[0] for x in cur.description]  # this will extract row headers
+                    json_data = []
+                    for result in results:
+                        json_data.append(dict(zip(row_headers, result)))
+                    return jsonify(json_data)
 
                 except Exception as e:
                     print(e)
