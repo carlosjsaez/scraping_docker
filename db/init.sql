@@ -5,7 +5,5 @@ CREATE TABLE parts (
   category VARCHAR(30) NOT NULL,
   model VARCHAR(30) NOT NULL,
   part VARCHAR(30) NOT NULL,
-  part_category VARCHAR(100) NOT NULL,
-
-  UNIQUE KEY(manufacturer, category, model, part, part_category)
+  part_category VARCHAR(100) NOT NULL
   );

@@ -2,7 +2,8 @@ from flask import Flask, request, jsonify
 from flask_mysqldb import MySQL
 from flask_restful import Api, Resource
 from flasgger import Swagger, LazyString, LazyJSONEncoder
-import json
+
+# Config files
 
 config = {
         'user': 'root',
@@ -12,6 +13,8 @@ config = {
         'database': 'urparts_scraper'
     }
 
+# Api definition
+
 api = Flask(__name__)
 
 api.config['MYSQL_HOST'] = config['host']
@@ -20,13 +23,14 @@ api.config['MYSQL_PASSWORD'] = config['password']
 api.config['MYSQL_DB'] = config['database']
 api.config['MYSQL_PORT'] = config['port']
 
-
 rest = Api(api)
+
+# Swagger Documentation
 
 swagger_config = {
     "version": '1.0',
-    "title": "Data Scrapping",
-    "description": "Proyecto API REST",
+    "title": "MySQL query API",
+    "description": "API REST",
     "termsOfService": "",
     "headers": [],
     "specs": [{
@@ -45,14 +49,14 @@ swagger = Swagger(api, config=swagger_config, template=lazy_template)
 
 mysql = MySQL(api)
 
-class consulta(Resource):
-        # @api.route('/', methods = ['GET'])
+class Consulta(Resource):
+
         def get(self):
                 """
                 post endpoint
                 ---
                 tags:
-                  - Flast Restful APIs
+                  - Flask Restful APIs
                 parameters:
                   - name: manufacturer
                     in: query
@@ -81,23 +85,30 @@ class consulta(Resource):
                     description: category's part of the product
                 responses:
                   500:
-                    description: Error The quuery inputs are not strings
+                    description: Error The query inputs are not strings
                   200:
                     description: Database query output
                     schema:
-                      id: stats
                       properties:
-                        sum:
-                          type: integer
-                          description: The sum of number
-                        product:
-                          type: integer
-                          description: The sum of number
-                        division:
-                          type: integer
-                          description: The sum of number
+                        manufacturer:
+                            type: string
+                            description: name of the product's manufacturer
+                        category:
+                            type: string
+                            description: category of the product
+                        model:
+                            type: string
+                            description: model of the product
+                        part:
+                            type: string
+                            description: part of the product
+                        part_category:
+                            type: string
+                            description: category's part of the product
                 """
                 try:
+
+                    # Iteration over the allowed parameters to gather them
                     params_raw = ['manufacturer', 'category', 'model', 'part', 'part_category']
                     params = []
                     params_val = []
@@ -106,24 +117,31 @@ class consulta(Resource):
                         if new_val:
                             params_val.append(new_val)
                             params.append(x)
+
+                    # As long as we have at least one input parameter, we must include filters in our query
                     if len(params) > 0:
                         query = f'WHERE ' + ' AND '.join([f'{param} = "{param_val}"' for param_val, param in zip(params_val, params)])
                     else:
                         query = ''
                     cur = mysql.connection.cursor()
                     cur.execute(f'SELECT * from urparts_scraper.parts {query}')
-                    results = cur.fetchall()
 
-                    row_headers = [x[0] for x in cur.description]  # this will extract row headers
+                    # Extraction of data and headers to create the output json
+                    results = cur.fetchall()
+                    row_headers = [x[0] for x in cur.description]
+
+                    # Output json creation
                     json_data = []
                     for result in results:
                         json_data.append(dict(zip(row_headers, result)))
+
                     return jsonify(json_data)
 
                 except Exception as e:
                     print(e)
 
-rest.add_resource(consulta, '/get')
+# Resources for the REST API
+rest.add_resource(Consulta, '/get')
 
 if __name__ == '__main__':
   api.run(debug=True, host='0.0.0.0')
